@@ -4,44 +4,59 @@ import random
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 
-pose = Pose()
-is_turning = False  # Biến trạng thái để kiểm soát quay đầu
+# Khung screen của node rùa
+TURTLE_MAX_X = 11.0
+TURTLE_MAX_Y = 11.0
+SAFE_DISTANCE = 1  # Ngưỡng an toàn cách tường
 
-def pose_callback(msg):
-    global pose
-    pose = msg
+class TurtleController:
+    def __init__(self):
+        rospy.init_node('auto_turtle', anonymous=True)
+        self.cmd_vel_pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
+        rospy.Subscriber('/turtle1/pose', Pose, self.pose_callback)
+        self.current_pose = None
+        self.rate = rospy.Rate(10)  # 10Hz
 
-def random_movement():
-    global pose, is_turning
-    rospy.init_node('random_turtle', anonymous=True)
-    pub = rospy.Publisher('/turtle1/cmd_vel', Twist, queue_size=10)
-    sub = rospy.Subscriber('/turtle1/pose', Pose, pose_callback)
+    def pose_callback(self, msg):
+        self.current_pose = msg
 
-    rate = rospy.Rate(2)  # 2 Hz
-
-    while not rospy.is_shutdown():
+    def move_turtle(self):
         twist = Twist()
+        while not rospy.is_shutdown():
+            if self.current_pose:
+                x, y = self.current_pose.x, self.current_pose.y
 
-        # Kiểm tra nếu rùa gần tường (cách tường < 0.4m)
-        if pose.x < 0.4 or pose.x > 10.6 or pose.y < 0.4 or pose.y > 10.6:
-            if not is_turning:  # Chỉ quay nếu chưa quay trước đó
-                rospy.logwarn("⚠️ Gần tường! Quay lại.")
-                twist.linear.x = 0
-                twist.angular.z = random.uniform(1.0, 2.0)  # Quay với tốc độ vừa phải
-                pub.publish(twist)
-                rospy.sleep(1.5)  # Đợi một chút cho rùa quay
-                is_turning = True  # Đánh dấu đã quay
-        else:
-            # Di chuyển ngẫu nhiên nếu không gần tường
-            twist.linear.x = random.uniform(0.5, 2.0)
-            twist.angular.z = random.uniform(-1.0, 1.0)  # Giảm góc quay để tránh xoay vòng nhiều
-            is_turning = False  # Reset trạng thái quay để lần sau có thể quay tiếp khi chạm tường
+                # Kiểm tra nếu gần tường
+                if x < SAFE_DISTANCE or x > TURTLE_MAX_X - SAFE_DISTANCE or \
+                   y < SAFE_DISTANCE or y > TURTLE_MAX_Y - SAFE_DISTANCE:
+                    rospy.logwarn("Gặp tường! Đang lùi lại...")
+                    
+                    # Lùi lại một chút
+                    twist.linear.x = -1.0
+                    twist.angular.z = 0.0
+                    self.cmd_vel_pub.publish(twist)
+                    rospy.sleep(1.0)
 
-        pub.publish(twist)
-        rate.sleep()
+                    # Quay trái hoặc phải ngẫu nhiên
+                    direction = random.choice([-1, 1])
+                    rospy.loginfo(" Quay {} ".format("trái" if direction == 1 else "phải"))
+                    twist.linear.x = 0.0
+                    twist.angular.z = direction * random.uniform(1.0, 2.0)
+                    self.cmd_vel_pub.publish(twist)
+                    rospy.sleep(1.0)
+
+                else:
+                    # Tiếp tục di chuyển ngẫu nhiên
+                    twist.linear.x = random.uniform(1.0, 2.0)
+                    twist.angular.z = random.uniform(-1.0, 1.0)
+                    self.cmd_vel_pub.publish(twist)
+                    rospy.loginfo("Di chuyển: linear_x = {:.2f}, angular_z = {:.2f}".format(twist.linear.x, twist.angular.z))
+
+            self.rate.sleep()
 
 if __name__ == '__main__':
     try:
-        random_movement()
+        controller = TurtleController()
+        controller.move_turtle()
     except rospy.ROSInterruptException:
         pass
