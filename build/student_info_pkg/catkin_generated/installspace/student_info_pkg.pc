@@ -1,0 +1,8 @@
+prefix=/home/doan/catkin_ws/install
+
+Name: student_info_pkg
+Description: Description of student_info_pkg
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: message_runtime

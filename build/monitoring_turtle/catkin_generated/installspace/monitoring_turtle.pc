@@ -1,0 +1,8 @@
+prefix=/home/doan/catkin_ws/install
+
+Name: monitoring_turtle
+Description: Description of monitoring_turtle
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

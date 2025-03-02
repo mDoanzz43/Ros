@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="my_complex_pkg" type="complex_publish.py" name="complex_publisher" output="screen"/>
+    <node pkg="my_complex_pkg" type="complex_subscriber.py" name="complex_subscriber" output="screen"/>
+</launch>
