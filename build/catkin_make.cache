@@ -1,2 +1,2 @@
-beginner_tutorials:monitoring_turtle:my_complex_pkg:student_info_pkg
+beginner_tutorials:monitoring_turtle:my_complex_pkg:student_info_pkg:turtlebot3/turtlebot3:turtlebot3/turtlebot3_bringup:turtlebot3/turtlebot3_description:turtlebot3/turtlebot3_example:turtlebot3/turtlebot3_navigation:turtlebot3/turtlebot3_slam:turtlebot3/turtlebot3_teleop:turtlebot3_simulations/turtlebot3_fake:turtlebot3_simulations/turtlebot3_gazebo:turtlebot3_simulations/turtlebot3_simulations
 -DCATKIN_DEVEL_PREFIX=/home/doan/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/doan/catkin_ws/install -G Unix Makefiles
